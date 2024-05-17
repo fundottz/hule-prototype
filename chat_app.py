@@ -1,44 +1,37 @@
-from openai import OpenAI
+import datetime
 import streamlit as st
-from info_gathering import ask_for_info
-from dotenv import load_dotenv
-import os
+from info_gathering import ask_for_info, filter_response
+from personal_details import PersonalDetails
 
-load_dotenv()
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-
-st.title("ChatGPT-like clone")
-
-client = OpenAI(api_key=OPENAI_API_KEY)
-
-if "openai_model" not in st.session_state:
-    st.session_state["openai_model"] = "gpt-3.5-turbo"
+st.title("Bot that sells prototype")
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
+    st.session_state.user_details = PersonalDetails()
+    question = ask_for_info()
+    st.session_state.messages.append({"role": "assistant", "content": question})
 
-if not st.session_state.messages:
-    first_message = ask_for_info()
-    st.session_state.messages.append({"role": "assistant", "content": first_message})
-
+st.write("rerender chat history ", datetime.datetime.now())
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-if prompt := st.chat_input("What is up?"):
-    question = ask_for_info()
-    st.session_state.messages.append({"role": "user", "content": question})
+if user_input := st.chat_input("What is up?"):
+    st.write("reacting on input ", datetime.datetime.now())
     with st.chat_message("user"):
-        st.markdown(prompt)
-
-    with st.chat_message("assistant"):
-        stream = client.chat.completions.create(
-            model=st.session_state["openai_model"],
-            messages=[
-                {"role": m["role"], "content": m["content"]}
-                for m in st.session_state.messages
-            ],
-            stream=True,
-        )
-        response = st.write_stream(stream)
-    st.session_state.messages.append({"role": "assistant", "content": response})
+        st.markdown(user_input)
+        st.session_state.messages.append({"role": "user", "content": user_input})
+    
+    user = st.session_state.user_details
+    user, ask_for = filter_response(user_input, user)
+    st.session_state.user_details = user
+    st.write(user)
+    
+    if ask_for:
+        question = ask_for_info(ask_for)
+        st.session_state.messages.append({"role": "assistant", "content": question})
+        with st.chat_message("assistant"):
+            st.markdown(question)
+    else:
+        with st.chat_message("assistant"):
+            st.markdown("Thank you for your time. Have a great day!")

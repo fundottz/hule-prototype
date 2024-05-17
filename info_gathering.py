@@ -21,7 +21,7 @@ def check_what_is_empty(user_peronal_details):
     return ask_for
 
 def add_non_empty_details(current_details: PersonalDetails, new_details: PersonalDetails):
-    non_empty_details = {k: v for k, v in new_details.dict().items() if v not in [None, ""]}
+    non_empty_details = {k: v for k, v in new_details.dict().items() if v not in [None, "", 0]}
     updated_details = current_details.copy(update=non_empty_details)
     return updated_details
 
