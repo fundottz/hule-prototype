@@ -3,7 +3,7 @@ import streamlit as st
 from info_gathering import ask_for_info, filter_response
 from personal_details import PersonalDetails
 
-st.title("Bot that sells prototype")
+st.title("HULE: Bot that sells")
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -11,7 +11,6 @@ if "messages" not in st.session_state:
     question = ask_for_info()
     st.session_state.messages.append({"role": "assistant", "content": question})
 
-st.write("rerender chat history ", datetime.datetime.now())
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
